@@ -83,7 +83,7 @@ If you want to save it in bower.json file, remember to add flag --save
     </template>
     </div>
     <template is="dom-if" if="{{enableAdd}}">
-      <paper-autocomplete id="autoCompleteInput" label="{{placeholder}}" on-keyup="_keyUp" source="[[geteys()]]"></paper-autocomplete>
+      <paper-autocomplete id="autoCompleteInput" label="{{placeholder}}" on-keyup="_keyUp" source="[[getKeys()]]"></paper-autocomplete>
     </template>
 
   </template>
@@ -189,7 +189,7 @@ If you want to save it in bower.json file, remember to add flag --save
       // loading resources, etc).
     },
 
-    geteys: function () {
+    getKeys: function () {
       return Object.keys(this.suggestions);
     },
 
@@ -216,7 +216,6 @@ If you want to save it in bower.json file, remember to add flag --save
           return this.tags.indexOf(obj) < 0;
         });
 
-        this.tags.indexOf(tag);
         if (tagsList.length > 0) {
           this.push('tags', ...tagsList);
         } else if (tag != '' && this.tags.indexOf(tag) < 0) {
@@ -272,5 +271,5 @@ If you want to save it in bower.json file, remember to add flag --save
     }
 
   });
-  
+
 </script>
