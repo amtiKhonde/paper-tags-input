@@ -64,7 +64,7 @@ If you want to save it in bower.json file, remember to add flag --save
       display: block;
       box-sizing: border-box;
     }
-    
+
     .clearfix:after {
       content: " ";
       display: block;
@@ -83,7 +83,7 @@ If you want to save it in bower.json file, remember to add flag --save
     </template>
     </div>
     <template is="dom-if" if="{{enableAdd}}">
-      <paper-autocomplete id="autoCompleteInput" label="{{placeholder}}" on-keyup="_keyUp" source="{{suggestions}}"></paper-input>
+      <paper-autocomplete id="autoCompleteInput" label="{{placeholder}}" on-keyup="_keyUp" source="[[geteys()]]"></paper-autocomplete>
     </template>
 
   </template>
@@ -156,13 +156,12 @@ If you want to save it in bower.json file, remember to add flag --save
         type: String,
         value: 'Please enter a new tag'
       },
-      
+
       /**
        * The suggested values for the paper-autocomplete element.
        */
       suggestions: {
-        type: Array,
-        value: function () { return []; }
+        type: Object
       }
     },
 
@@ -190,6 +189,10 @@ If you want to save it in bower.json file, remember to add flag --save
       // loading resources, etc).
     },
 
+    geteys: function () {
+      return Object.keys(this.suggestions);
+    },
+
     detached: function () {
       // The analog to `attached`, `detached` fires when the element has been
       // removed from a document.
@@ -204,13 +207,19 @@ If you want to save it in bower.json file, remember to add flag --save
      * @param {string} the tag that needs to be added.
      */
     _addTag: function (tag) {
-      var input = this.$$('#autoCompleteInput');
-
+      var tagsList = this.suggestions[tag] || [];
       if (this.enableAdd) {
         if (typeof (this.tags) == 'undefined') {
           this.tags = [];
         }
-        if (tag != '' && this.tags.indexOf(tag) < 0) {
+        tagsList = tagsList.filter((obj) => {
+          return this.tags.indexOf(obj) < 0;
+        });
+
+        this.tags.indexOf(tag);
+        if (tagsList.length > 0) {
+          this.push('tags', ...tagsList);
+        } else if (tag != '' && this.tags.indexOf(tag) < 0) {
           this.push('tags', tag);
         }
       }
@@ -235,7 +244,6 @@ If you want to save it in bower.json file, remember to add flag --save
      */
     _keyUp: function (e) {
       var keyVal = e.which;
-      var input = this.$$('#autoCompleteInput');
 
       if (keyVal == 13) {
         this._addTag(this._getInputVal());
@@ -264,5 +272,5 @@ If you want to save it in bower.json file, remember to add flag --save
     }
 
   });
-
+  
 </script>
