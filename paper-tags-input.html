@@ -166,8 +166,10 @@ If you want to save it in bower.json file, remember to add flag --save
       },
 
       /**
-       * The shortcuts holds list of command as key and callback function as its value.
-       * commands in this object is used to execute its corresponding callback function.
+       * The shortcuts variable represents the array of <String, Function> pair.
+       * shortcuts allow you to fire the given function corresponding to the string.
+       * where function must take String[] as parameter and return String[].
+       * @see #installShortcut(...);
        */
       shortcuts: {
         type: Object,
@@ -218,18 +220,14 @@ If you want to save it in bower.json file, remember to add flag --save
           this.tags = [];
         }
         if (tag != '' && this.tags.indexOf(tag) < 0) {
-          // Check whether tag is a shortcut if it is then execute it before adding tag.
-          var args = tag.split(" ");
-          var callback = this.shortcuts[args.splice(0, 1)];
-          if(callback) {
-            var result = callback(args);
-            result = result.filter((obj) => {
-              return this.tags.indexOf(obj) < 0;
-            });
-            this.push('tags', ...result);
-          } else {
-            this.push('tags', tag);
-          }
+          // Remove the spaces in tag and split.
+          var args = tag.replace(/[ ]+/g, " ").split(" ");
+
+          /** If tag consist of shortcut's command then fire its corresponding callback 
+              which returns an array @see #shortcuts else return tag as an array. 
+           */
+          (tags = (this.shortcuts[args.splice(0, 1)] || function() { return tag.split();})(args)) && 
+            this.push("tags", ...(tags.filter((o) => { return this.tags.indexOf(o) < 0; })));
         }
       }
 
@@ -239,14 +237,12 @@ If you want to save it in bower.json file, remember to add flag --save
     /**
      * installShortcut is a public method to create the new shortcuts.
      *
-     * @param {string} the command that needs to be added as key.
-     * @param {Function} the callback that needs to be added as value.
+     * @param {string} the command which will be used as a key to @param callback.
+     * @param {Function} the callback which will be invoked when @param command appears as tag in input.
      */
     installShortcut: function (command, callback) {
-      // Check whether command-callback pair pre exist if not then add.
-      if (!this.shortcuts[command]) {
-        this.shortcuts[command] = callback;
-      }
+      // Create shortcut if <command, callback> pair doesn't already exists.
+      this.shortcuts[command] = this.shortcuts[command] || callback;
     },
 
     /**
