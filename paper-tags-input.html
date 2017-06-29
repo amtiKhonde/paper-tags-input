@@ -166,9 +166,8 @@ If you want to save it in bower.json file, remember to add flag --save
       },
 
       /**
-       * The shortcuts variable represents the array of <String, Function> pair.
-       * shortcuts allow you to fire the given function corresponding to the string.
-       * where function must take String[] as parameter and return String[].
+       * shortcuts hold ‘command’ and their respective ‘method’ for paper-tags-input.
+       * Where function must take String[] as parameter and return String[].
        * @see #installShortcut(...);
        */
       shortcuts: {
@@ -223,10 +222,11 @@ If you want to save it in bower.json file, remember to add flag --save
           // Remove the spaces in tag and split.
           var args = tag.replace(/[ ]+/g, " ").split(" ");
 
-          /** If tag consist of shortcut's command then fire its corresponding callback 
-              which returns an array @see #shortcuts else return tag as an array. 
+          /** 
+           * If input tag contain’s a command @see #shortcuts then fire the corresponding 
+           * shortcut and push the returned array to tags else push the input tag directly.
            */
-          (tags = (this.shortcuts[args.splice(0, 1)] || function() { return tag.split();})(args)) && 
+          (tags = (this.shortcuts[args.splice(0, 1)] || function() { return tag.split(); })(args)) && 
             this.push("tags", ...(tags.filter((o) => { return this.tags.indexOf(o) < 0; })));
         }
       }
@@ -237,11 +237,11 @@ If you want to save it in bower.json file, remember to add flag --save
     /**
      * installShortcut is a public method to create the new shortcuts.
      *
-     * @param {string} the command which will be used as a key to @param callback.
-     * @param {Function} the callback which will be invoked when @param command appears as tag in input.
+     * @param {string} command is a ‘Trigger phrase’ to execute a @param callback
+     * @param {Function} callback is a ‘method’ provided for given @param command 
      */
     installShortcut: function (command, callback) {
-      // Create shortcut if <command, callback> pair doesn't already exists.
+      // skip the existing shortcuts
       this.shortcuts[command] = this.shortcuts[command] || callback;
     },
 
