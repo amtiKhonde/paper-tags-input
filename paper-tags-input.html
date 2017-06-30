@@ -220,10 +220,10 @@ If you want to save it in bower.json file, remember to add flag --save
         }
         if (tag != '' && this.tags.indexOf(tag) < 0) {
           // Remove the spaces in tag and split.
-          var args = tag.replace(/[ ]+/g, " ").split(" ");
+          var args = tag.replace(/[\s]+/g, " ").split(" ");
 
           /** 
-           * If input tag contain’s a command @see #shortcuts then fire the corresponding 
+           * If input tag contains a command, then fire the corresponding 
            * shortcut and push the returned array to tags else push the input tag directly.
            */
           (tags = (this.shortcuts[args.splice(0, 1)] || function() { return tag.split(); })(args)) && 
