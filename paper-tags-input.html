@@ -93,7 +93,7 @@ If you want to save it in bower.json file, remember to add flag --save
 <script>
   Polymer({
 
-    is: 'paper-tags-input',
+    is: "paper-tags-input",
 
     properties: {
 
@@ -121,7 +121,7 @@ If you want to save it in bower.json file, remember to add flag --save
       */
       size: {
         type: String,
-        value: 'large'
+        value: "large"
       },
 
       /**
@@ -145,7 +145,7 @@ If you want to save it in bower.json file, remember to add flag --save
        */
       label: {
         type: String,
-        value: ''
+        value: ""
       },
 
       /**
@@ -154,7 +154,7 @@ If you want to save it in bower.json file, remember to add flag --save
 
       placeholder: {
         type: String,
-        value: 'Please enter a new tag'
+        value: "Please enter a new tag"
       },
 
       /**
@@ -177,7 +177,7 @@ If you want to save it in bower.json file, remember to add flag --save
     },
 
     listeners: {
-      'tag-item-remove': '_onTagItemRemove'
+      "tag-item-remove": "_onTagItemRemove"
     },
 
     // Element Lifecycle
@@ -215,16 +215,16 @@ If you want to save it in bower.json file, remember to add flag --save
      */
     _addTag: function (tag) {
       if (this.enableAdd) {
-        if (typeof (this.tags) == 'undefined') {
+        if (typeof (this.tags) == "undefined") {
           this.tags = [];
         }
-        if (tag != '' && this.tags.indexOf(tag) < 0) {
+        if (tag != "" && this.tags.indexOf(tag) < 0) {
           // Remove the spaces in tag and split.
           var args = tag.replace(/[\s]+/g, " ").split(" ");
 
           /** 
            * If input tag contains a command, then fire the corresponding 
-           * shortcut and push the returned array to tags else push the input tag directly.
+           * shortcut and push the returned array to tags, else push the input tag directly.
            */
           var callback = this.shortcuts[args.splice(0, 1)]; 
           var result = callback ? callback(args) : tag.split();
@@ -245,8 +245,8 @@ If you want to save it in bower.json file, remember to add flag --save
      * @param {Function} callback is a ‘method’ provided for given @param command 
      */
     installShortcut: function (command, callback) {
-      // Skip the existing shortcuts
-      this.shortcuts[command] = this.shortcuts[command] || callback;
+      // Add new or override the existing shortcut.
+      this.shortcuts[command] || callback;
     },
 
     /**
@@ -255,7 +255,7 @@ If you want to save it in bower.json file, remember to add flag --save
      * @return {string} returns the trimmed version of paper-input value.
      */
     _getInputVal: function () {
-      var input = this.$$('#autoCompleteInput');
+      var input = this.$$("#autoCompleteInput");
       return input.text;
     },
 
@@ -273,12 +273,12 @@ If you want to save it in bower.json file, remember to add flag --save
     },
 
     /**
-     * Handler for 'tag-item-remove' event, which is fired when a <tag-item> is being removed.
+     * Handler for "tag-item-remove" event, which is fired when a <tag-item> is being removed.
      *
      * @param {Object} event object
      */
     _onTagItemRemove: function (e) {
-      this.splice('tags', e.detail.index, 1);
+      this.splice("tags", e.detail.index, 1);
     },
 
     /**
@@ -286,11 +286,11 @@ If you want to save it in bower.json file, remember to add flag --save
      *
      */
     _clear: function () {
-      var input = this.$$('#autoCompleteInput');
+      var input = this.$$("#autoCompleteInput");
 
       input.clear();
       input.reset();
-      this.querySelector('#suggestionsWrapper').style.display = 'none';
+      this.querySelector("#suggestionsWrapper").style.display = "none";
     }
 
   });
