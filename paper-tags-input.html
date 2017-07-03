@@ -246,7 +246,7 @@ If you want to save it in bower.json file, remember to add flag --save
      */
     installShortcut: function (command, callback) {
       // Add new or override the existing shortcut.
-      this.shortcuts[command] || callback;
+      this.shortcuts[command] = callback;
     },
 
     /**
