@@ -182,7 +182,7 @@ If you want to save it in bower.json file, remember to add flag --save
 
     // Element Lifecycle
 
-    ready: function () {
+    ready: function() {
       // `ready` is called after all elements have been configured, but
       // propagates bottom-up. This element's children are ready, but parents
       // are not.
@@ -191,7 +191,7 @@ If you want to save it in bower.json file, remember to add flag --save
       // necessary), or kick off any processes the element wants to perform.
     },
 
-    attached: function () {
+    attached: function() {
       // `attached` fires once the element and its parents have been inserted
       // into a document.
       //
@@ -200,7 +200,7 @@ If you want to save it in bower.json file, remember to add flag --save
       // loading resources, etc).
     },
 
-    detached: function () {
+    detached: function() {
       // The analog to `attached`, `detached` fires when the element has been
       // removed from a document.
       //
@@ -213,7 +213,7 @@ If you want to save it in bower.json file, remember to add flag --save
      *
      * @param {string} the tag that needs to be added.
      */
-    _addTag: function (tag) {
+    _addTag: function(tag) {
       if (this.enableAdd) {
         if (typeof (this.tags) == "undefined") {
           this.tags = [];
@@ -244,7 +244,7 @@ If you want to save it in bower.json file, remember to add flag --save
      * @param {string} command is a ‘Trigger phrase’ to execute a @param callback
      * @param {Function} callback is a ‘function’ provided for given @param command 
      */
-    installShortcut: function (command, callback) {
+    installShortcut: function(command, callback) {
       // Add new or override the existing shortcut.
       this.shortcuts[command] = callback;
     },
@@ -254,7 +254,7 @@ If you want to save it in bower.json file, remember to add flag --save
      *
      * @return {string} returns the trimmed version of paper-input value.
      */
-    _getInputVal: function () {
+    _getInputVal: function() {
       var input = this.$$("#autoCompleteInput");
       return input.text;
     },
@@ -264,7 +264,7 @@ If you want to save it in bower.json file, remember to add flag --save
      *
      * @param {object} event object
      */
-    _keyUp: function (e) {
+    _keyUp: function(e) {
       var keyVal = e.which;
 
       if (keyVal == 13) {
@@ -277,7 +277,7 @@ If you want to save it in bower.json file, remember to add flag --save
      *
      * @param {Object} event object
      */
-    _onTagItemRemove: function (e) {
+    _onTagItemRemove: function(e) {
       this.splice("tags", e.detail.index, 1);
     },
 
@@ -285,7 +285,7 @@ If you want to save it in bower.json file, remember to add flag --save
      * Clears the input and suggestion list.
      *
      */
-    _clear: function () {
+    _clear: function() {
       var input = this.$$("#autoCompleteInput");
 
       input.clear();
