@@ -93,7 +93,7 @@ If you want to save it in bower.json file, remember to add flag --save
 <script>
   Polymer({
 
-    is: 'paper-tags-input',
+    is: "paper-tags-input",
 
     properties: {
 
@@ -121,7 +121,7 @@ If you want to save it in bower.json file, remember to add flag --save
       */
       size: {
         type: String,
-        value: 'large'
+        value: "large"
       },
 
       /**
@@ -145,7 +145,7 @@ If you want to save it in bower.json file, remember to add flag --save
        */
       label: {
         type: String,
-        value: ''
+        value: ""
       },
 
       /**
@@ -154,7 +154,7 @@ If you want to save it in bower.json file, remember to add flag --save
 
       placeholder: {
         type: String,
-        value: 'Please enter a new tag'
+        value: "Please enter a new tag"
       },
 
       /**
@@ -166,8 +166,9 @@ If you want to save it in bower.json file, remember to add flag --save
       },
 
       /**
-       * The shortcuts holds list of command as key and callback function as its value.
-       * commands in this object is used to execute its corresponding callback function.
+       * shortcuts holds commands and their respective functions for paper-tags-input,
+       * where function must take String[] as parameter and return String[].
+       * @see #installShortcut(...);
        */
       shortcuts: {
         type: Object,
@@ -176,12 +177,12 @@ If you want to save it in bower.json file, remember to add flag --save
     },
 
     listeners: {
-      'tag-item-remove': '_onTagItemRemove'
+      "tag-item-remove": "_onTagItemRemove"
     },
 
     // Element Lifecycle
 
-    ready: function () {
+    ready: function() {
       // `ready` is called after all elements have been configured, but
       // propagates bottom-up. This element's children are ready, but parents
       // are not.
@@ -190,7 +191,7 @@ If you want to save it in bower.json file, remember to add flag --save
       // necessary), or kick off any processes the element wants to perform.
     },
 
-    attached: function () {
+    attached: function() {
       // `attached` fires once the element and its parents have been inserted
       // into a document.
       //
@@ -199,7 +200,7 @@ If you want to save it in bower.json file, remember to add flag --save
       // loading resources, etc).
     },
 
-    detached: function () {
+    detached: function() {
       // The analog to `attached`, `detached` fires when the element has been
       // removed from a document.
       //
@@ -212,24 +213,25 @@ If you want to save it in bower.json file, remember to add flag --save
      *
      * @param {string} the tag that needs to be added.
      */
-    _addTag: function (tag) {
+    _addTag: function(tag) {
       if (this.enableAdd) {
-        if (typeof (this.tags) == 'undefined') {
+        if (typeof (this.tags) == "undefined") {
           this.tags = [];
         }
-        if (tag != '' && this.tags.indexOf(tag) < 0) {
-          // Check whether tag is a shortcut if it is then execute it before adding tag.
-          var args = tag.split(" ");
-          var callback = this.shortcuts[args.splice(0, 1)];
-          if(callback) {
-            var result = callback(args);
-            result = result.filter((obj) => {
-              return this.tags.indexOf(obj) < 0;
-            });
-            this.push('tags', ...result);
-          } else {
-            this.push('tags', tag);
-          }
+        if (tag != "" && this.tags.indexOf(tag) < 0) {
+          // Remove the spaces in tag and split.
+          var args = tag.replace(/[\s]+/g, " ").split(" ");
+
+          /** 
+           * If input tag contains a command, then fire the corresponding 
+           * shortcut and push the returned array to tags, else push the input tag directly.
+           */
+          var callback = this.shortcuts[args.splice(0, 1)]; 
+          var result = callback ? callback(args) : tag.split();
+          result = result.filter((obj) => {
+            return this.tags.indexOf(obj) < 0;
+          });
+          this.push("tags", ...result)
         }
       }
 
@@ -239,14 +241,12 @@ If you want to save it in bower.json file, remember to add flag --save
     /**
      * installShortcut is a public method to create the new shortcuts.
      *
-     * @param {string} the command that needs to be added as key.
-     * @param {Function} the callback that needs to be added as value.
+     * @param {string} command is a ‘Trigger phrase’ to execute a @param callback
+     * @param {Function} callback is a ‘function’ provided for given @param command 
      */
-    installShortcut: function (command, callback) {
-      // Check whether command-callback pair pre exist if not then add.
-      if (!this.shortcuts[command]) {
-        this.shortcuts[command] = callback;
-      }
+    installShortcut: function(command, callback) {
+      // Add new or override the existing shortcut.
+      this.shortcuts[command] = callback;
     },
 
     /**
@@ -254,8 +254,8 @@ If you want to save it in bower.json file, remember to add flag --save
      *
      * @return {string} returns the trimmed version of paper-input value.
      */
-    _getInputVal: function () {
-      var input = this.$$('#autoCompleteInput');
+    _getInputVal: function() {
+      var input = this.$$("#autoCompleteInput");
       return input.text;
     },
 
@@ -264,7 +264,7 @@ If you want to save it in bower.json file, remember to add flag --save
      *
      * @param {object} event object
      */
-    _keyUp: function (e) {
+    _keyUp: function(e) {
       var keyVal = e.which;
 
       if (keyVal == 13) {
@@ -273,24 +273,24 @@ If you want to save it in bower.json file, remember to add flag --save
     },
 
     /**
-     * Handler for 'tag-item-remove' event, which is fired when a <tag-item> is being removed.
+     * Handler for "tag-item-remove" event, which is fired when a <tag-item> is being removed.
      *
      * @param {Object} event object
      */
-    _onTagItemRemove: function (e) {
-      this.splice('tags', e.detail.index, 1);
+    _onTagItemRemove: function(e) {
+      this.splice("tags", e.detail.index, 1);
     },
 
     /**
      * Clears the input and suggestion list.
      *
      */
-    _clear: function () {
-      var input = this.$$('#autoCompleteInput');
+    _clear: function() {
+      var input = this.$$("#autoCompleteInput");
 
       input.clear();
       input.reset();
-      this.querySelector('#suggestionsWrapper').style.display = 'none';
+      this.querySelector("#suggestionsWrapper").style.display = "none";
     }
 
   });
