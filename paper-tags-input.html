@@ -71,6 +71,14 @@ If you want to save it in bower.json file, remember to add flag --save
       height: 0;
       clear: both;
     }
+
+    h5 {
+      color: #6a6a6a;
+      padding: 0px;
+      margin: 10px;
+      font-size: 11px;
+      font-weight: 100;
+    }
   </style>
 
   <template>
@@ -79,15 +87,21 @@ If you want to save it in bower.json file, remember to add flag --save
       <template is="dom-repeat" items="{{tags}}">
         <tag-item font-color="{{fontColor}}" tag-color="{{tagColor}}" size="{{size}}" enable-remove="{{enableRemove}}" index="{{index}}"
           value="{{item}}"></tag-item>
+      </template>
     </div>
+    <template is="dom-if" if="{{isSuggestion}}">
+      <h5>Suggested Tags</h5>
+      <div class="clearfix">
+        <template is="dom-repeat" items="{{suggestedTags}}">
+          <tag-item is-suggestion font-color="{{fontColor}}" tag-color="{{tagColor}}" size="{{size}}" enable-remove="{{enableRemove}}" index="{{index}}"
+            value="{{item}}"></tag-item>
+        </template>
+      </div>
     </template>
-    </div>
     <template is="dom-if" if="{{enableAdd}}">
       <paper-autocomplete id="autoCompleteInput" label="{{placeholder}}" on-keyup="_keyUp" source="{{suggestions}}"></paper-autocomplete>
     </template>
-
   </template>
-
 </dom-module>
 
 <script>
@@ -104,6 +118,22 @@ If you want to save it in bower.json file, remember to add flag --save
         type: Array,
         notify: true,
         value: function () { return []; },
+      },
+
+      /**
+       * List of strings that holds server suggestions, to improve accuracy.
+       */
+      suggestedTags: {
+        type: Array,
+        notify: true,
+      },
+
+      /**
+       * Flag to bind visibility of suggestions block.
+       */
+      isSuggestion: {
+        type: Boolean,
+        notify: true
       },
 
       /**
@@ -177,8 +207,14 @@ If you want to save it in bower.json file, remember to add flag --save
     },
 
     listeners: {
-      "tag-item-remove": "_onTagItemRemove"
+      "tag-item-remove": "_onTagItemRemove",
+      "suggestedTag-item-removed": "_deleteSuggestion",
+      "suggestedTag-item-added": "_addSuggestion"
     },
+
+    observers: [
+      '_hasSuggestions(suggestedTags.*)'
+    ],
 
     // Element Lifecycle
 
@@ -222,11 +258,11 @@ If you want to save it in bower.json file, remember to add flag --save
           // Remove the spaces in tag and split.
           var args = tag.replace(/[\s]+/g, " ").split(/[\s,]+/g);
 
-          /** 
-           * If input tag contains a command, then fire the corresponding 
+          /**
+           * If input tag contains a command, then fire the corresponding
            * shortcut and push the returned array to tags, else push the input tag directly.
            */
-          var callback = this.shortcuts[args.splice(0, 1)]; 
+          var callback = this.shortcuts[args.splice(0, 1)];
           var result = callback ? callback(args) : tag.split();
           result = result.filter((obj) => {
             return this.tags.indexOf(obj) < 0;
@@ -238,11 +274,22 @@ If you want to save it in bower.json file, remember to add flag --save
       this._clear();
     },
 
+    _addSuggestion: function(e) {
+      this._addTag(this.splice("suggestedTags", e.detail.index, 1)[0]);
+    },
+
+    _deleteSuggestion: function(e) {
+      this.splice("suggestedTags", e.detail.index, 1);
+    },
+    
+    _hasSuggestions: function() {
+       this.isSuggestion = this.suggestedTags && this.suggestedTags.length > 0 ? true : false;
+    },
     /**
      * installShortcut is a public method to create the new shortcuts.
      *
      * @param {string} command is a ‘Trigger phrase’ to execute a @param callback
-     * @param {Function} callback is a ‘function’ provided for given @param command 
+     * @param {Function} callback is a ‘function’ provided for given @param command
      */
     installShortcut: function(command, callback) {
       // Add new or override the existing shortcut.
