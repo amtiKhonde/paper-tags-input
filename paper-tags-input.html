@@ -90,7 +90,9 @@ If you want to save it in bower.json file, remember to add flag --save
       </template>
     </div>
     <template is="dom-if" if="{{isSuggestion}}">
-      <h5>Suggested Tags</h5>
+      <template is="dom-if" if="{{suggestionsTitle}}">
+          <h5>{{suggestionsTitle}}</h5>
+      </template>
       <div class="clearfix">
         <template is="dom-repeat" items="{{suggestedTags}}">
           <tag-item is-suggestion font-color="{{fontColor}}" tag-color="{{tagColor}}" size="{{size}}" enable-remove="{{enableRemove}}" index="{{index}}"
@@ -128,6 +130,10 @@ If you want to save it in bower.json file, remember to add flag --save
         notify: true,
       },
 
+      suggestionsTitle: {
+          type: String,
+          notify: true,
+      },
       /**
        * Flag to bind visibility of suggestions block.
        */
@@ -281,9 +287,9 @@ If you want to save it in bower.json file, remember to add flag --save
     _deleteSuggestion: function(e) {
       this.splice("suggestedTags", e.detail.index, 1);
     },
-    
+
     _hasSuggestions: function() {
-       this.isSuggestion = this.suggestedTags && this.suggestedTags.length > 0 ? true : false;
+       this.isSuggestion = this.suggestedTags && this.suggestedTags.length > 0;
     },
     /**
      * installShortcut is a public method to create the new shortcuts.

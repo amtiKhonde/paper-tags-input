@@ -27,65 +27,65 @@ tag-item is a tag element used by tags-input to show tags with a closed button.
       display: block;
       box-sizing: border-box;
     }
-    .tag-value{
+    .tag-value {
       display: inline-block;
       vertical-align: middle;
     }
-    .tag-item-container{
+    .tag-item-container {
       background-color: var(--light-primary-color);
       float: left;
       margin-left: 6px;
       margin-bottom: 3px;
     }
-    .large.tag-item-container{
+    .large.tag-item-container {
       border-radius: 20px;
       padding-left:14px;
     }
-    .medium.tag-item-container{
+    .medium.tag-item-container {
       border-radius: 17px;
       padding-left: 11px;
     }
-    .small.tag-item-container{
+    .small.tag-item-container {
       border-radius: 14px;
       padding-left: 9px;
     }
 
-    .large{
+    .large {
       font-size:18px;
     }
-    .large paper-icon-button{
+    .large paper-icon-button {
         height: 40px;
         width: 40px;
     }
-    .large paper-icon-button::shadow #icon{
+    .large paper-icon-button::shadow #icon {
         width: 22px;
         height: 22px;
     }
 
-    .medium paper-icon-button{
+    .medium paper-icon-button {
         height: 34px;
         width: 34px;
     }
-    .medium{
+    .medium {
       font-size:14px;
     }
-    .medium paper-icon-button::shadow #icon{
+    .medium paper-icon-button::shadow #icon {
         width: 18px;
         height: 18px;
     }
-    .small paper-icon-button{
+    .small paper-icon-button {
         height: 30px;
         width: 30px;
     }
-    .small{
+    .small {
       font-size:12px;
     }
-    .small paper-icon-button::shadow #icon{
+    .small paper-icon-button::shadow #icon {
         width: 14px;
         height: 14px;
     }
-    
-    .suggestion{
+
+    .suggestion {
       padding-left:0 !important;
       color: #bdbdbd !important;
     }
@@ -174,7 +174,7 @@ tag-item is a tag element used by tags-input to show tags with a closed button.
      * _containerColor is the internal method to compute background style
      *
      */
-     _containerColor:function(tagColor, fontColor){
+     _containerColor: function(tagColor, fontColor){
       var styles = []
       if (typeof(tagColor) != "undefined"){
         styles.push("background-color:" + tagColor);
@@ -189,11 +189,11 @@ tag-item is a tag element used by tags-input to show tags with a closed button.
      * _containerClass is the internal method to compute size css name
      *
      */
-     _containerClass:function(size){
+     _containerClass: function(size){
        return size + " tag-item-container";
      },
 
-     _isSuggestion:function(suggestion) {
+     _isSuggestion: function(suggestion) {
        return suggestion && "suggestion"
      },
 
@@ -202,16 +202,16 @@ tag-item is a tag element used by tags-input to show tags with a closed button.
      */
      _removeItem: function() {
       if (this.enableRemove === true) {
-        this.fire('tag-item-remove', {index: this.index});
+        this.fire("tag-item-remove", {index: this.index});
       }
     },
 
     _addSuggestion: function() {
-         this.fire('suggestedTag-item-added', {index: this.index});
+         this.fire("suggestedTag-item-added", {index: this.index});
     },
 
     _removeSuggestion: function() {
-        this.fire('suggestedTag-item-removed', {index: this.index});
+        this.fire("suggestedTag-item-removed", {index: this.index});
     }
 
   });
