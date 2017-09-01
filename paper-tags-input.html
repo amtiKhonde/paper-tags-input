@@ -63,6 +63,7 @@ If you want to save it in bower.json file, remember to add flag --save
     :host {
       display: block;
       box-sizing: border-box;
+      --input-underline-focus-color: #2196f3;
     }
 
     .clearfix:after {
@@ -78,6 +79,10 @@ If you want to save it in bower.json file, remember to add flag --save
       margin: 10px;
       font-size: 11px;
       font-weight: 100;
+    }
+
+    paper-autocomplete {
+      --paper-input-container-focus-color: var(--input-underline-focus-color);
     }
   </style>
 
