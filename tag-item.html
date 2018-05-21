@@ -12,6 +12,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../iron-icon/iron-icon.html">
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../paper-tooltip/paper-tooltip.html">
 
 <!--
 tag-item is a tag element used by tags-input to show tags with a closed button.
@@ -27,99 +28,129 @@ tag-item is a tag element used by tags-input to show tags with a closed button.
       display: block;
       box-sizing: border-box;
     }
-    .tag-value {
+    .tag-value{
       display: inline-block;
       vertical-align: middle;
     }
-    .tag-item-container {
+    .tag-item-container{
+      position: relative;
       background-color: var(--light-primary-color);
       float: left;
       margin-left: 6px;
       margin-bottom: 3px;
+      display: inline-block;
     }
-    .large.tag-item-container {
+    .large.tag-item-container{
       border-radius: 20px;
       padding-left:14px;
     }
-    .medium.tag-item-container {
+    .medium.tag-item-container{
       border-radius: 17px;
       padding-left: 11px;
     }
-    .small.tag-item-container {
+    .small.tag-item-container{
       border-radius: 14px;
       padding-left: 9px;
     }
 
-    .large {
+    .large{
       font-size:18px;
     }
-    .large paper-icon-button {
+    .large paper-icon-button{
         height: 40px;
         width: 40px;
     }
-    .large paper-icon-button::shadow #icon {
+    .large paper-icon-button::shadow #icon{
         width: 22px;
         height: 22px;
     }
 
-    .medium paper-icon-button {
+    .medium paper-icon-button{
         height: 34px;
         width: 34px;
     }
-    .medium {
+    .medium{
       font-size:14px;
     }
-    .medium paper-icon-button::shadow #icon {
+    .medium paper-icon-button::shadow #icon{
         width: 18px;
         height: 18px;
     }
-    .small paper-icon-button {
+    .small paper-icon-button{
         height: 30px;
         width: 30px;
     }
-    .small {
+    .small{
       font-size:12px;
     }
-    .small paper-icon-button::shadow #icon {
+    .small paper-icon-button::shadow #icon{
         width: 14px;
         height: 14px;
+    }
+    .tag-item-container .tooltiptext {
+        visibility: hidden;
+        float: left;
+        max-width: 500px;
+        line-height: 1.3;
+        font-size: 14px;
+        font-family: Roboto;
+        font-weight: lighter;
+        font-stretch: normal;
+        word-break: break-all;
+        background-color: #737373;
+        color: #fff;
+        text-align: left;
+        border-radius: 6px;
+        padding: 5px 5px;
+        position: absolute;
+        z-index: 1;
+        bottom: 125%;
+        left: 50%;
+        margin-left: -60px;
+        opacity: 0.9;
+    }
+
+    .tag-item-container:hover .tooltiptext {
+      visibility: visible;
+      opacity: 0.8;
     }
 
     .suggestion {
       padding-left:0 !important;
       color: #bdbdbd !important;
     }
+
     .cancel {
       color: #bdbdbd;
     }
+    
     .accept {
       color: #5c6bc0;
     }
   </style>
-
   <template>
-      <div style$="{{_containerColor(tagColor, fontColor)}}" class$="{{_containerClass(size)}} {{_isSuggestion(isSuggestion)}}">
-        <template is="dom-if" if="{{isSuggestion}}">
-          <paper-icon-button class="cancel" icon="icons:cancel" on-tap="_removeSuggestion"></paper-icon-button>
-          <span class="tag-value">{{value}}</span>
-          <paper-icon-button class="accept" icon="icons:check-circle" on-tap="_addSuggestion"></paper-icon-button>
+    <div id="tag" style$="{{_containerColor(tagColor, fontColor)}}" class$="{{_containerClass(size)}} {{_isSuggestion(isSuggestion)}}" data-args$={{tagData.refID}} on-mouseout="_onMouseOut" on-mouseover="_onMouseOver">
+      <template is="dom-if" if="{{isSuggestion}}">
+        <paper-icon-button class="cancel" icon="icons:cancel" on-tap="_removeSuggestion"></paper-icon-button>
+        <span class="tag-value">{{suggestionValue}}</span>
+        <paper-icon-button class="accept" icon="icons:check-circle" on-tap="_addSuggestion"></paper-icon-button>
+      </template>
+      <template is="dom-if" if="{{!isSuggestion}}">
+        <span data-args$={{tagData.refID}} class="tag-value">{{tagData.label}}</span>
+        <template is="dom-if" if="{{enableRemove}}">
+          <paper-icon-button data-args$={{tagData.refID}} on-tap="_removeItem" icon="icons:cancel"></paper-icon-button>
         </template>
-        <template is="dom-if" if="{{!isSuggestion}}">
-          <span class="tag-value">{{value}}</span>
-          <template is="dom-if" if="{{enableRemove}}">
-            <paper-icon-button on-tap="_removeItem" icon="icons:cancel"></paper-icon-button>
-          </template>
-          <template is="dom-if" if="{{!enableRemove}}">
-            <paper-icon-button style="width:0px;visibility:hidden;" on-tap="remove" icon="icons:cancel"></paper-icon-button>
-          </template>
+        <template is="dom-if" if="{{!enableRemove}}">
+          <paper-icon-button data-args$={{tagData.refID}} style="width:0px;visibility:hidden;" on-tap="remove" icon="icons:cancel"></paper-icon-button>
         </template>
-      </div>
+        <span id="tooltip" hidden$="[[!enableTooltip]]" class="tooltiptext">{{synonymsString}}</span>
+      </template>
+    </div>
   </template>
 
 </dom-module>
 
 <script>
-
   Polymer({
     is: 'tag-item',
     properties: {
@@ -146,6 +177,7 @@ tag-item is a tag element used by tags-input to show tags with a closed button.
         type: Boolean,
         value: false
        },
+
        /**
        * CSS color of tag
        */
@@ -167,14 +199,55 @@ tag-item is a tag element used by tags-input to show tags with a closed button.
       /**
       * value of the tag
       */
-       value:String
+      tagData: {
+        type: Array,
+        notify: true,
+        value: function () { return []; },
+      },
+
+       tagType: {
+         type: String,
+         notify: true,
+       },
+
+       enableTooltip: {
+         type: Boolean,
+       },
+
+       tooltipData: {
+         type: Array,
+         notify: true, 
+       },
+
+       synonymsString: {
+         type: String,
+         notify: true,
+       },
+
+       isHovered: {
+         type: String,
+         notify: true,
+         value: false
+       },
+
+      /**
+      * value of the tag
+      */
+      suggestionValue:String
+    },
+
+    observers: [
+        "_docsUpdated(tagData.docs)"
+    ],
+
+    ready:function() {
     },
 
     /**
      * _containerColor is the internal method to compute background style
      *
      */
-     _containerColor: function(tagColor, fontColor){
+     _containerColor:function(tagColor, fontColor){
       var styles = []
       if (typeof(tagColor) != "undefined"){
         styles.push("background-color:" + tagColor);
@@ -182,6 +255,7 @@ tag-item is a tag element used by tags-input to show tags with a closed button.
       if (typeof(fontColor) != "undefined"){
         styles.push("color:" + fontColor);
       }
+
       return styles.join(";");
      },
 
@@ -189,31 +263,86 @@ tag-item is a tag element used by tags-input to show tags with a closed button.
      * _containerClass is the internal method to compute size css name
      *
      */
-     _containerClass: function(size){
+     _containerClass:function(size){
        return size + " tag-item-container";
      },
 
      _isSuggestion: function(suggestion) {
        return suggestion && "suggestion"
      },
-
+     
     /**
      * Handler for removing the tag item
      */
      _removeItem: function() {
       if (this.enableRemove === true) {
-        this.fire("tag-item-remove", {index: this.index});
+        this.fire('tag-item-remove', {index: this.index});
+      }
+    },
+
+    /**
+     * Handler for MouseHover on Tags
+     */
+     _onMouseOver: function(e) {
+      if(this.tagType == "group") {
+        this.isHovered = true;
+
+        if(!this.synonymsExists(this.tagData.refID)) {
+          this.enableTooltip = false;
+          this.$$("#tag").style.cursor = "wait"
+          this.fire("get-synonyms-intent", this.tagData.refID);
+        } else {
+          this.enableTooltip = true;
+          this.$$("#tag").style.cursor = "default"
+          this.synonymsString = this.tagData.docs.toString();
+          this._setTooltipSize(this.synonymsString.length)
+        }
+      } else {
+        this.enableTooltip = false;
+      }
+    },
+
+    _setTooltipSize: function(length) {
+      if(length > 80) {
+        this.$$("#tooltip").style.width = "500px"
+      } else {
+        this.$$("#tooltip").style.whiteSpace = "nowrap";
+      }
+    },
+
+    /**
+     * Handler for MouseOut on Tags
+     */
+     _onMouseOut: function(e) {
+      if(this.tagType == "group") {
+        this.isHovered = false;
+      }
+    },
+
+    /**
+     * Function to check whether synonyms exist for particular tag
+     */
+    synonymsExists: function(refID) {
+      if(this.tagData.refID == refID && this.tagData.docs.length > 0) {
+        return true
+      }
+      return false
+    },
+
+    _docsUpdated: function(e) {
+      if(this.tagsData != undefined && this.tagData.docs.length > 0) {
+        this.synonymsString = this.tagData.docs.toString();
+        this.synonymsString = this.synonymsString.replace(/\s\s+/g, ' ');
       }
     },
 
     _addSuggestion: function() {
          this.fire("suggestedTag-item-added", {index: this.index});
     },
-
     _removeSuggestion: function() {
         this.fire("suggestedTag-item-removed", {index: this.index});
     }
-
+    
   });
 
 </script>

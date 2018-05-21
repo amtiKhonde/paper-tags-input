@@ -11,6 +11,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../paper-autocomplete/paper-autocomplete.html">
 <link rel="import" href="../iron-icon/iron-icon.html">
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../paper-item/paper-item.html">
 <link rel="import" href="../iron-icons/iron-icons.html">
 <link rel="import" href="tag-item.html">
 
@@ -63,7 +64,6 @@ If you want to save it in bower.json file, remember to add flag --save
     :host {
       display: block;
       box-sizing: border-box;
-      --input-underline-focus-color: #2196f3;
     }
 
     .clearfix:after {
@@ -73,6 +73,11 @@ If you want to save it in bower.json file, remember to add flag --save
       clear: both;
     }
 
+    .warning {
+      color: #ff4200;
+      font-size: 12px;
+    }
+
     h5 {
       color: #6a6a6a;
       padding: 0px;
@@ -80,7 +85,6 @@ If you want to save it in bower.json file, remember to add flag --save
       font-size: 11px;
       font-weight: 100;
     }
-
     paper-autocomplete {
       --paper-input-container-focus-color: var(--input-underline-focus-color);
     }
@@ -90,24 +94,97 @@ If you want to save it in bower.json file, remember to add flag --save
     <h3>{{label}}</h3>
     <div class="clearfix">
       <template is="dom-repeat" items="{{tags}}">
-        <tag-item font-color="{{fontColor}}" tag-color="{{tagColor}}" size="{{size}}" enable-remove="{{enableRemove}}" index="{{index}}"
-          value="{{item}}"></tag-item>
+        <template is="dom-if" if="{{item.refID}}">
+          <tag-item
+              tag-type="group"
+              font-color="white"
+              tag-color="#3f51b5"
+              tag-data="{{item}}"
+              size="{{size}}"
+              enable-remove="{{enableRemove}}"
+              index="{{index}}">
+          </tag-item>
+        </template>
+        <template is="dom-if" if="{{!item.refID}}">
+          <tag-item
+              tag-type="normal"
+              font-color="{{fontColor}}"
+              tag-color="{{tagColor}}"
+              tag-data="{{item}}"
+              size="{{size}}"
+              enable-remove="{{enableRemove}}"
+              index="{{index}}">
+          </tag-item>
+        </template>
       </template>
     </div>
     <template is="dom-if" if="{{isSuggestion}}">
-      <template is="dom-if" if="{{suggestionsTitle}}">
-          <h5>{{suggestionsTitle}}</h5>
-      </template>
-      <div class="clearfix">
-        <template is="dom-repeat" items="{{suggestedTags}}">
-          <tag-item is-suggestion font-color="{{fontColor}}" tag-color="{{tagColor}}" size="{{size}}" enable-remove="{{enableRemove}}" index="{{index}}"
-            value="{{item}}"></tag-item>
+        <template is="dom-if" if="{{suggestionsTitle}}">
+            <h5>{{suggestionsTitle}}</h5>
         </template>
-      </div>
-    </template>
-    <template is="dom-if" if="{{enableAdd}}">
-      <paper-autocomplete id="autoCompleteInput" label="{{placeholder}}" on-keyup="_keyUp" source="{{suggestions}}"></paper-autocomplete>
-    </template>
+        <div class="clearfix">
+          <template is="dom-repeat" items="{{suggestedTags}}">
+            <tag-item 
+              is-suggestion 
+              font-color="{{fontColor}}"
+              tag-color="{{tagColor}}"
+              size="{{size}}"
+              enable-remove="{{enableRemove}}"
+              index="{{index}}"
+              suggestion-value="{{item}}">
+            </tag-item>
+          </template>
+        </div>
+      </template>
+      <paper-autocomplete label="Enter tag"
+          id="autoCompleteInput"
+          no-label-float="true"
+          on-keyup="_keyUp"
+          on-text-changed="_textChanged"
+          source="[[suggestedGroupTags]]"
+          text-property="label"
+          value-property="id">
+          <template autocomplete-custom-template>
+              <style>
+              :host {
+                display: block;
+              }
+              paper-item.suggestion-item {
+                padding: 8px 16px;
+              }
+              .intent-name {
+                color: #333;
+              }
+              .synonyms-list {
+                margin-top: 4px;
+                color: #999;
+              }
+              /**
+              * IE11 paper-item min-height bug: https://github.com/PolymerElements/paper-item/issues/35
+              * If you are running on IE11, add this lines to reset min-height on IE11
+              */
+              @media screen and (-ms-high-contrast: active), (-ms-high-contrast: none) {
+                paper-item.suggestion-item {
+                  min-height: 100% !important;
+                  height: auto !important;
+                  /**
+                  * If you are experimenting that some CSS properties for paper-item are not overriden in Polymer 2.x with IE11,
+                  * please add !important to ensure the shadow-dom v1 polyfill works properly
+                  */
+                  padding: 8px 16px !important;
+                }
+              }
+            </style>
+            <paper-item class="suggestion-item" on-tap="_onSelect" id$="[[_getSuggestionId(index)]]" role="option" aria-selected="false">
+                <div>
+                  <div class="intent-name">[[item.label]]</div>
+                  <div class="synonyms-list">[[item.docs]]</div>
+                </div>
+                <paper-ripple></paper-ripple>
+            </paper-item>
+          </template>
+        </paper-autocomplete>
+      <div class="warning" hidden$="{{!displayWarning}}">Already added!</div>
   </template>
 </dom-module>
 
@@ -127,18 +204,30 @@ If you want to save it in bower.json file, remember to add flag --save
         value: function () { return []; },
       },
 
-      /**
+       /**
        * List of strings that holds server suggestions, to improve accuracy.
        */
-      suggestedTags: {
+       suggestedTags: {
         type: Array,
         notify: true,
       },
 
+      /**
+      * Title of suggestion section.
+      */
       suggestionsTitle: {
           type: String,
           notify: true,
       },
+
+      /**
+      * Suggestions for Group (Lafz) tags.
+      */
+      suggestedGroupTags: {
+        type: Array,
+        notify: true,
+      },
+
       /**
        * Flag to bind visibility of suggestions block.
        */
@@ -166,14 +255,6 @@ If you want to save it in bower.json file, remember to add flag --save
       },
 
       /**
-       * Boolean flag for whether add tag operation is enabled.
-       */
-      enableAdd: {
-        type: Boolean,
-        value: true
-      },
-
-      /**
        * Boolean flag for whether remove tag operation is enabled.
        */
       enableRemove: {
@@ -192,18 +273,9 @@ If you want to save it in bower.json file, remember to add flag --save
       /**
        * The placeholder for the paper-input element.
        */
-
       placeholder: {
         type: String,
         value: "Please enter a new tag"
-      },
-
-      /**
-       * The suggested values for the paper-autocomplete element.
-       */
-      suggestions: {
-        type: Array,
-        value: function () { return []; }
       },
 
       /**
@@ -214,19 +286,24 @@ If you want to save it in bower.json file, remember to add flag --save
       shortcuts: {
         type: Object,
         value: {}
+      },
+
+      displayWarning: {
+        type:Boolean,
+        value: false,
       }
     },
 
     listeners: {
       "tag-item-remove": "_onTagItemRemove",
+      'autocomplete-selected': '_onOptionSelected',
       "suggestedTag-item-removed": "_deleteSuggestion",
-      "suggestedTag-item-added": "_addSuggestion"
+      "suggestedTag-item-added": "_addSuggestion",
     },
 
     observers: [
       '_hasSuggestions(suggestedTags.*)'
     ],
-
     // Element Lifecycle
 
     ready: function() {
@@ -236,6 +313,9 @@ If you want to save it in bower.json file, remember to add flag --save
       //
       // This is the point where you should make modifications to the DOM (when
       // necessary), or kick off any processes the element wants to perform.
+      var autocomplete = this.$$('paper-autocomplete');
+      // Override default queryFn with our custom. This is a needed requirement to implement the custom template
+      autocomplete.queryFn = this._queryFn;
     },
 
     attached: function() {
@@ -253,7 +333,6 @@ If you want to save it in bower.json file, remember to add flag --save
       //
       // Use this to clean up anything you did in `attached`.
     },
-
     // Element Behavior
     /**
      * _addTag is the internal method to add a new tag to the list
@@ -261,46 +340,61 @@ If you want to save it in bower.json file, remember to add flag --save
      * @param {string} the tag that needs to be added.
      */
     _addTag: function(tag) {
-      if (this.enableAdd) {
-        if (typeof (this.tags) == "undefined") {
-          this.tags = [];
-        }
-        if (tag != "" && this.tags.indexOf(tag) < 0) {
+      if (typeof (this.tags) == "undefined") {
+        this.tags = [];
+      }
+      if (tag != "" && this.tags.indexOf(tag) < 0) {
+        if (typeof tag != "string") {
+          if (!this.synonymExists(tag.label)) {
+            this.push("tags", tag)
+          }
+        } else {
           // Remove the spaces in tag and split.
           var args = tag.replace(/[\s]+/g, " ").split(/[\s,]+/g);
-
-          /**
-           * If input tag contains a command, then fire the corresponding
-           * shortcut and push the returned array to tags, else push the input tag directly.
-           */
-          var callback = this.shortcuts[args.splice(0, 1)];
-          var result = callback ? callback(args) : tag.split();
-          result = result.filter((obj) => {
+          /** 
+          * If input tag contains a command, then fire the corresponding 
+          * shortcut and push the returned array to tags, else push the input tag directly.
+          */
+          var callback = this.shortcuts[args.splice(0, 1)]; 
+          var shortcutTags = callback ? callback(args) : tag.split();
+          shortcutTags = shortcutTags.filter((obj) => {
             return this.tags.indexOf(obj) < 0;
           });
-          this.push("tags", ...result)
+          for (var s of shortcutTags) {
+            var result = {
+              label: s,
+              refID: "",
+              docs: "",
+            }; 
+            if (!this.synonymExists(result.label)) {
+              this.push("tags",result)
+            } 
+          }
         }
       }
 
       this._clear();
     },
-
     _addSuggestion: function(e) {
       this._addTag(this.splice("suggestedTags", e.detail.index, 1)[0]);
     },
-
     _deleteSuggestion: function(e) {
       this.splice("suggestedTags", e.detail.index, 1);
     },
-
     _hasSuggestions: function() {
        this.isSuggestion = this.suggestedTags && this.suggestedTags.length > 0;
     },
+    synonymExists: function(tag) {
+      return this.tags.some(function(el) {
+        return el.label.toLowerCase() === tag.toLowerCase();
+      });
+    },
+
     /**
      * installShortcut is a public method to create the new shortcuts.
      *
      * @param {string} command is a ‘Trigger phrase’ to execute a @param callback
-     * @param {Function} callback is a ‘function’ provided for given @param command
+     * @param {Function} callback is a ‘function’ provided for given @param command 
      */
     installShortcut: function(command, callback) {
       // Add new or override the existing shortcut.
@@ -349,8 +443,31 @@ If you want to save it in bower.json file, remember to add flag --save
       input.clear();
       input.reset();
       this.querySelector("#suggestionsWrapper").style.display = "none";
-    }
-
+    },
+    /**
+     * Clears the input and suggestion list.
+     *
+     */
+     _queryFn: function(datasource, query) {
+       return datasource
+     },
+     _onOptionSelected: function (event) {
+      this._addTag(event.detail.option)
+    },
+    _textChanged: function(event) {
+      if(event.detail.value == "") {
+        this.displayWarning = false;
+      } else {
+        if(this.synonymExists(event.detail.value)) {
+          this.displayWarning = true
+        } else {
+          this.displayWarning = false;
+          if(event.detail.value && event.detail.value.length >= 2) {
+            this.fire("get-sugesstion-intent", event.detail.value)
+          }
+        }  
+      }
+    },
   });
 
 </script>
