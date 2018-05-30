@@ -16,9 +16,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 <!--
 tag-item is a tag element used by tags-input to show tags with a closed button.
-
     <tag-item></tag-item>
-
 @demo
 -->
 <dom-module id="tag-item">
@@ -30,6 +28,7 @@ tag-item is a tag element used by tags-input to show tags with a closed button.
     }
     .tag-value{
       display: inline-block;
+      text-transform: capitalize;
       vertical-align: middle;
     }
     .tag-item-container{
@@ -52,7 +51,6 @@ tag-item is a tag element used by tags-input to show tags with a closed button.
       border-radius: 14px;
       padding-left: 9px;
     }
-
     .large{
       font-size:18px;
     }
@@ -64,7 +62,6 @@ tag-item is a tag element used by tags-input to show tags with a closed button.
         width: 22px;
         height: 22px;
     }
-
     .medium paper-icon-button{
         height: 34px;
         width: 34px;
@@ -91,12 +88,12 @@ tag-item is a tag element used by tags-input to show tags with a closed button.
         visibility: hidden;
         float: left;
         max-width: 500px;
+        margin-top: 2px;
         line-height: 1.3;
         font-size: 14px;
         font-family: Roboto;
         font-weight: lighter;
         font-stretch: normal;
-        word-break: break-all;
         background-color: #737373;
         color: #fff;
         text-align: left;
@@ -104,22 +101,16 @@ tag-item is a tag element used by tags-input to show tags with a closed button.
         padding: 5px 5px;
         position: absolute;
         z-index: 1;
-        bottom: 125%;
-        left: 50%;
-        margin-left: -60px;
         opacity: 0.9;
     }
-
     .tag-item-container:hover .tooltiptext {
-      visibility: visible;
-      opacity: 0.8;
+        visibility: visible;
+        opacity: 0.8;
     }
-
     .suggestion {
       padding-left:0 !important;
       color: #bdbdbd !important;
     }
-
     .cancel {
       color: #bdbdbd;
     }
@@ -129,19 +120,19 @@ tag-item is a tag element used by tags-input to show tags with a closed button.
     }
   </style>
   <template>
-    <div id="tag" style$="{{_containerColor(tagColor, fontColor)}}" class$="{{_containerClass(size)}} {{_isSuggestion(isSuggestion)}}" data-args$={{tagData.refID}} on-mouseout="_onMouseOut" on-mouseover="_onMouseOver">
+    <div id="tag" style$="{{_containerColor(tagColor, fontColor)}}" class$="{{_containerClass(size)}} {{_isSuggestion(isSuggestion)}}" data-args$={{tagData.refId}} on-mousemove="_onMouseMove" on-mouseout="_onMouseOut">
       <template is="dom-if" if="{{isSuggestion}}">
         <paper-icon-button class="cancel" icon="icons:cancel" on-tap="_removeSuggestion"></paper-icon-button>
         <span class="tag-value">{{suggestionValue}}</span>
         <paper-icon-button class="accept" icon="icons:check-circle" on-tap="_addSuggestion"></paper-icon-button>
       </template>
       <template is="dom-if" if="{{!isSuggestion}}">
-        <span data-args$={{tagData.refID}} class="tag-value">{{tagData.label}}</span>
+        <span data-args$={{tagData.refId}} class="tag-value">{{tagData.label}}</span>
         <template is="dom-if" if="{{enableRemove}}">
-          <paper-icon-button data-args$={{tagData.refID}} on-tap="_removeItem" icon="icons:cancel"></paper-icon-button>
+          <paper-icon-button data-args$={{tagData.refId}} on-tap="_removeItem" icon="icons:cancel"></paper-icon-button>
         </template>
         <template is="dom-if" if="{{!enableRemove}}">
-          <paper-icon-button data-args$={{tagData.refID}} style="width:0px;visibility:hidden;" on-tap="remove" icon="icons:cancel"></paper-icon-button>
+          <paper-icon-button data-args$={{tagData.refId}} style="width:0px;visibility:hidden;" on-tap="remove" icon="icons:cancel"></paper-icon-button>
         </template>
         <span id="tooltip" hidden$="[[!enableTooltip]]" class="tooltiptext">{{synonymsString}}</span>
       </template>
@@ -159,12 +150,10 @@ tag-item is a tag element used by tags-input to show tags with a closed button.
       *
       * @event tag-item-remove
       */
-
       /**
       * index of the tag
       */
        index: Number,
-
       /**
       * size of the tags, possible values: small, medium, large
       */
@@ -172,22 +161,18 @@ tag-item is a tag element used by tags-input to show tags with a closed button.
         type: String,
         value: 'large'
        },
-
        isSuggestion: {
         type: Boolean,
         value: false
        },
-
        /**
        * CSS color of tag
        */
        tagColor: String,
-
        /**
        * CSS color of text and remove button
        */
        fontColor: String,
-
        /**
        * Boolean flag to indicate if enable remove operation
        */
@@ -195,7 +180,6 @@ tag-item is a tag element used by tags-input to show tags with a closed button.
         type: Boolean,
         value: true
       },
-
       /**
       * value of the tag
       */
@@ -204,45 +188,44 @@ tag-item is a tag element used by tags-input to show tags with a closed button.
         notify: true,
         value: function () { return []; },
       },
-
-       tagType: {
-         type: String,
-         notify: true,
-       },
-
-       enableTooltip: {
-         type: Boolean,
-       },
-
-       tooltipData: {
-         type: Array,
-         notify: true, 
-       },
-
-       synonymsString: {
-         type: String,
-         notify: true,
-       },
-
-       isHovered: {
-         type: String,
-         notify: true,
-         value: false
-       },
-
       /**
-      * value of the tag
+      * type of tag
+      */
+      tagType: {
+        type: String,
+        notify: true,
+      },
+      /**
+      * value to indicate whether to display tooltip or not.
+      */
+      enableTooltip: {
+        type: Boolean,
+      },
+      /**
+      * comma seperated string consisting synonyms.
+      */
+      synonymsString: {
+        type: String,
+        notify: true,
+      },
+      /**
+      * value to indicate whether tag is hovered or not.
+      */
+      isHovered: {
+        type: String,
+        notify: true,
+        value: false
+      },
+      /**
+      * value of the suggestion
       */
       suggestionValue:String
     },
-
     observers: [
-        "_docsUpdated(tagData.docs)"
+        "_docsUpdated(tagData.doc.*)"
     ],
-
     ready:function() {
     },
-
     /**
      * _containerColor is the internal method to compute background style
      *
@@ -255,10 +238,8 @@ tag-item is a tag element used by tags-input to show tags with a closed button.
       if (typeof(fontColor) != "undefined"){
         styles.push("color:" + fontColor);
       }
-
       return styles.join(";");
      },
-
     /**
      * _containerClass is the internal method to compute size css name
      *
@@ -266,7 +247,6 @@ tag-item is a tag element used by tags-input to show tags with a closed button.
      _containerClass:function(size){
        return size + " tag-item-container";
      },
-
      _isSuggestion: function(suggestion) {
        return suggestion && "suggestion"
      },
@@ -279,29 +259,9 @@ tag-item is a tag element used by tags-input to show tags with a closed button.
         this.fire('tag-item-remove', {index: this.index});
       }
     },
-
     /**
-     * Handler for MouseHover on Tags
-     */
-     _onMouseOver: function(e) {
-      if(this.tagType == "group") {
-        this.isHovered = true;
-
-        if(!this.synonymsExists(this.tagData.refID)) {
-          this.enableTooltip = false;
-          this.$$("#tag").style.cursor = "wait"
-          this.fire("get-synonyms-intent", this.tagData.refID);
-        } else {
-          this.enableTooltip = true;
-          this.$$("#tag").style.cursor = "default"
-          this.synonymsString = this.tagData.docs.toString();
-          this._setTooltipSize(this.synonymsString.length)
-        }
-      } else {
-        this.enableTooltip = false;
-      }
-    },
-
+     * Function to set tooltip size.
+    */
     _setTooltipSize: function(length) {
       if(length > 80) {
         this.$$("#tooltip").style.width = "500px"
@@ -309,40 +269,69 @@ tag-item is a tag element used by tags-input to show tags with a closed button.
         this.$$("#tooltip").style.whiteSpace = "nowrap";
       }
     },
-
     /**
-     * Handler for MouseOut on Tags
+     * Handler for MouseOut on Tags.
      */
      _onMouseOut: function(e) {
       if(this.tagType == "group") {
         this.isHovered = false;
       }
     },
-
     /**
-     * Function to check whether synonyms exist for particular tag
+     * Handler for MouseMove on Tags.
      */
-    synonymsExists: function(refID) {
-      if(this.tagData.refID == refID && this.tagData.docs.length > 0) {
+    _onMouseMove: function(e) {
+      if(this.tagType == "group") {
+        this.isHovered = true;
+        if(!this.synonymsExists(this.tagData.refId)) {
+          this.enableTooltip = false;
+          this.$$("#tag").style.cursor = "wait";
+          this.fire("get-synonyms-intent", this.tagData.refId);
+        } else {
+          this.enableTooltip = true;
+          this.$$("#tag").style.cursor = "default"
+          console.log("Tagdata Doc -> ", this.tagData.doc)
+          this.synonymsString = this.tagData.doc.toString().replace(/,/g, ', ');
+          this._setTooltipSize(this.synonymsString.length)
+        }
+      } else {
+        this.enableTooltip = false;
+      }
+    },
+    /**
+     * Function to check whether synonyms exist for particular tag.
+     */
+    synonymsExists: function(refId) {
+      if(this.tagData.refId == refId && this.tagData.doc.length > 0) {
         return true
       }
       return false
     },
-
-    _docsUpdated: function(e) {
-      if(this.tagsData != undefined && this.tagData.docs.length > 0) {
-        this.synonymsString = this.tagData.docs.toString();
-        this.synonymsString = this.synonymsString.replace(/\s\s+/g, ' ');
+    /**
+     * Function to observe whether the docs(synonyms) are updated.
+     */
+    _docsUpdated: function() {
+      if(this.tagData.doc != undefined && this.tagData.doc.length > 0) {
+          this.enableTooltip = true;
+          this.synonymsString = this.tagData.doc.toString();
+          if(this.isHovered) {
+            this._setTooltipSize(this.synonymsString.length)
+            this.$$("#tag").style.cursor = "default";
+          }
       }
     },
-
+    /**
+     * Function to fire suggestionn item added event.
+     */
     _addSuggestion: function() {
          this.fire("suggestedTag-item-added", {index: this.index});
     },
+    /**
+     * Function to fire suggestionn item removed event.
+     */
     _removeSuggestion: function() {
         this.fire("suggestedTag-item-removed", {index: this.index});
     }
     
   });
-
 </script>

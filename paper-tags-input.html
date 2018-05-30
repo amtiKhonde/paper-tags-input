@@ -16,47 +16,26 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="tag-item.html">
 
 <!--
-
 paper-tags-input is a list of tags with a single-line text field with Material Design styling.
-
     <paper-tags-input></paper-tags-input>
-
 Use a label property to show the label for tags input and placeholder property for the placeholder in paper-input element.
-
     <paper-tags-input label="Tags" placeholder="Please enter the tag"></paper-tags-input>
-
 It may include an optional error message. For now, the tags list is case sensitive. So Taeyeon and taeyeon will not be considered as duplicate.
-
     <paper-tags-input empty-error-message="Tag could not be empty"></paper-tags-input>
     <paper-tags-input duplicate-error-message="Tag could not be duplicate"></paper-tags-input>
-
 Tags list are stored in the property of tags.
-
     <paper-tags-input tags="{{tags_list}}"></paper-tags-input>
-
 <b>Styling</b>
-
 For the color of tags, it is using theme color --light-primary-color by default.
-
 But you can change the color by applying custom colors.
-
     <paper-tags-input tag-color="red" font-color="#FFFFFF" tags="{{tags_list}}"></paper-tags-input>
-
 <b>Internaltional</b>
-
 paper-tags-input work with all unicode languages, such as Chinese, Korean, Japanese, German, Russian, Arabic, etc.
-
 <b>Installation</b>
-
 Install with bower
-
     bower install paper-tags-input
-
 If you want to save it in bower.json file, remember to add flag --save
-
     bower install --save paper-tags-input
-
-
 @demo
 -->
 <dom-module id="paper-tags-input">
@@ -65,25 +44,26 @@ If you want to save it in bower.json file, remember to add flag --save
       display: block;
       box-sizing: border-box;
     }
-
     .clearfix:after {
       content: " ";
       display: block;
       height: 0;
       clear: both;
     }
-
     .warning {
       color: #ff4200;
       font-size: 12px;
     }
-
     h5 {
       color: #6a6a6a;
       padding: 0px;
       margin: 10px;
       font-size: 11px;
       font-weight: 100;
+    }
+    .suggestion-wrapper {
+      width: auto;
+      overflow: hidden;
     }
     paper-autocomplete {
       --paper-input-container-focus-color: var(--input-underline-focus-color);
@@ -94,7 +74,7 @@ If you want to save it in bower.json file, remember to add flag --save
     <h3>{{label}}</h3>
     <div class="clearfix">
       <template is="dom-repeat" items="{{tags}}">
-        <template is="dom-if" if="{{item.refID}}">
+        <template is="dom-if" if="{{item.refId}}">
           <tag-item
               tag-type="group"
               font-color="white"
@@ -105,7 +85,7 @@ If you want to save it in bower.json file, remember to add flag --save
               index="{{index}}">
           </tag-item>
         </template>
-        <template is="dom-if" if="{{!item.refID}}">
+        <template is="dom-if" if="{{!item.refId}}">
           <tag-item
               tag-type="normal"
               font-color="{{fontColor}}"
@@ -141,7 +121,7 @@ If you want to save it in bower.json file, remember to add flag --save
           no-label-float="true"
           on-keyup="_keyUp"
           on-text-changed="_textChanged"
-          source="[[suggestedGroupTags]]"
+          source="{{suggestedGroupTags}}"
           text-property="label"
           value-property="id">
           <template autocomplete-custom-template>
@@ -151,13 +131,27 @@ If you want to save it in bower.json file, remember to add flag --save
               }
               paper-item.suggestion-item {
                 padding: 8px 16px;
+                border-bottom: solid 1px #e0e0e0;
+              }
+              paper-item.suggestion-item:last-child {
+                border-bottom: none !important;
               }
               .intent-name {
+                text-transform: capitalize;
                 color: #333;
               }
               .synonyms-list {
                 margin-top: 4px;
                 color: #999;
+                white-space: nowrap;
+              }
+              .suggestion-item:hover .synonyms-list {
+                animation: marquee 15s linear infinite;
+                animation-play-state: running; 
+              }
+              @keyframes marquee {
+                0%   { transform: translate(0, 0); }
+                100% { transform: translate(-100%, 0); }
               }
               /**
               * IE11 paper-item min-height bug: https://github.com/PolymerElements/paper-item/issues/35
@@ -171,14 +165,18 @@ If you want to save it in bower.json file, remember to add flag --save
                   * If you are experimenting that some CSS properties for paper-item are not overriden in Polymer 2.x with IE11,
                   * please add !important to ensure the shadow-dom v1 polyfill works properly
                   */
-                  padding: 8px 16px !important;
+                  padding: 8px 16px;
+                  border-bottom: solid 1px #e0e0e0;
+                }
+                paper-item.suggestion-item:last-child {
+                  border-bottom: none !important;
                 }
               }
             </style>
-            <paper-item class="suggestion-item" on-tap="_onSelect" id$="[[_getSuggestionId(index)]]" role="option" aria-selected="false">
-                <div>
+            <paper-item id="suggestion-item" class="suggestion-item" on-tap="_onSelect" id$="[[_getSuggestionId(index)]]" role="option" aria-selected="false">
+                <div class="suggestion-wrapper">
                   <div class="intent-name">[[item.label]]</div>
-                  <div class="synonyms-list">[[item.docs]]</div>
+                  <div class="synonyms-list"> [[item.doc]]</div>
                 </div>
                 <paper-ripple></paper-ripple>
             </paper-item>
@@ -190,11 +188,8 @@ If you want to save it in bower.json file, remember to add flag --save
 
 <script>
   Polymer({
-
     is: "paper-tags-input",
-
     properties: {
-
       /**
        * list of String that holds tags. Values in this array should be identical and avoids duplicates due to the definition of tags.
        */
@@ -203,7 +198,6 @@ If you want to save it in bower.json file, remember to add flag --save
         notify: true,
         value: function () { return []; },
       },
-
        /**
        * List of strings that holds server suggestions, to improve accuracy.
        */
@@ -211,7 +205,6 @@ If you want to save it in bower.json file, remember to add flag --save
         type: Array,
         notify: true,
       },
-
       /**
       * Title of suggestion section.
       */
@@ -219,7 +212,6 @@ If you want to save it in bower.json file, remember to add flag --save
           type: String,
           notify: true,
       },
-
       /**
       * Suggestions for Group (Lafz) tags.
       */
@@ -227,7 +219,6 @@ If you want to save it in bower.json file, remember to add flag --save
         type: Array,
         notify: true,
       },
-
       /**
        * Flag to bind visibility of suggestions block.
        */
@@ -235,17 +226,14 @@ If you want to save it in bower.json file, remember to add flag --save
         type: Boolean,
         notify: true
       },
-
       /**
       * the CSS color for the tag, e.g. #e5e5e5
       */
       tagColor: String,
-
       /**
       * the CSS color for the text and remove button, e.g. #e5e5e5
       */
       fontColor: String,
-
       /**
       * size of the tags, possible values: small, medium, large
       */
@@ -253,7 +241,6 @@ If you want to save it in bower.json file, remember to add flag --save
         type: String,
         value: "large"
       },
-
       /**
        * Boolean flag for whether remove tag operation is enabled.
        */
@@ -261,7 +248,6 @@ If you want to save it in bower.json file, remember to add flag --save
         type: Boolean,
         value: true
       },
-
       /**
        * The label that will show up as the label for tags input.
        */
@@ -269,7 +255,6 @@ If you want to save it in bower.json file, remember to add flag --save
         type: String,
         value: ""
       },
-
       /**
        * The placeholder for the paper-input element.
        */
@@ -277,7 +262,6 @@ If you want to save it in bower.json file, remember to add flag --save
         type: String,
         value: "Please enter a new tag"
       },
-
       /**
        * shortcuts holds commands and their respective functions for paper-tags-input,
        * where function must take String[] as parameter and return String[].
@@ -287,25 +271,25 @@ If you want to save it in bower.json file, remember to add flag --save
         type: Object,
         value: {}
       },
-
+      /**
+      * Boolean value to indicate whether to show warning or not.
+      */
       displayWarning: {
         type:Boolean,
         value: false,
-      }
+      },
     },
-
     listeners: {
       "tag-item-remove": "_onTagItemRemove",
       'autocomplete-selected': '_onOptionSelected',
       "suggestedTag-item-removed": "_deleteSuggestion",
       "suggestedTag-item-added": "_addSuggestion",
     },
-
     observers: [
-      '_hasSuggestions(suggestedTags.*)'
+      "_hasSuggestions(suggestedTags.*)",
+      "_displayGroupSuggestions(suggestedGroupTags.*)",
     ],
     // Element Lifecycle
-
     ready: function() {
       // `ready` is called after all elements have been configured, but
       // propagates bottom-up. This element's children are ready, but parents
@@ -317,7 +301,6 @@ If you want to save it in bower.json file, remember to add flag --save
       // Override default queryFn with our custom. This is a needed requirement to implement the custom template
       autocomplete.queryFn = this._queryFn;
     },
-
     attached: function() {
       // `attached` fires once the element and its parents have been inserted
       // into a document.
@@ -326,7 +309,6 @@ If you want to save it in bower.json file, remember to add flag --save
       // visual state or active behavior (measuring sizes, beginning animations,
       // loading resources, etc).
     },
-
     detached: function() {
       // The analog to `attached`, `detached` fires when the element has been
       // removed from a document.
@@ -346,7 +328,13 @@ If you want to save it in bower.json file, remember to add flag --save
       if (tag != "" && this.tags.indexOf(tag) < 0) {
         if (typeof tag != "string") {
           if (!this.synonymExists(tag.label)) {
+            // Convert comma sepetated list of synonyms(docs) into array before adding.
+            var x = tag.doc.split(",").map(function(item) {
+              return item.trim();
+            });
+            tag.doc = x;
             this.push("tags", tag)
+            console.log("Tags -> ", this.tags);
           }
         } else {
           // Remove the spaces in tag and split.
@@ -363,33 +351,57 @@ If you want to save it in bower.json file, remember to add flag --save
           for (var s of shortcutTags) {
             var result = {
               label: s,
-              refID: "",
-              docs: "",
+              refId: "",
+              doc: "",
             }; 
             if (!this.synonymExists(result.label)) {
               this.push("tags",result)
-            } 
+            }
           }
         }
       }
-
       this._clear();
     },
+    /**
+    * _addSuggestion is the internal method to add suggestion.
+    */
     _addSuggestion: function(e) {
       this._addTag(this.splice("suggestedTags", e.detail.index, 1)[0]);
     },
+    /**
+    * _deleteSuggestion is the internal method to delete suggestion.
+    */
     _deleteSuggestion: function(e) {
       this.splice("suggestedTags", e.detail.index, 1);
     },
+    /**
+    * _hasSuggestions is the internal method to observe suggested tags.
+    */
     _hasSuggestions: function() {
        this.isSuggestion = this.suggestedTags && this.suggestedTags.length > 0;
     },
-    synonymExists: function(tag) {
+    /**
+    * _displayGroupSuggestions is the internal method to display lafz tag suggestions.
+    */
+    _displayGroupSuggestions: function() {
+      if (this.suggestedGroupTags.length > 0) {
+        // Convert array of synonyms in to comma seperated string to display.
+        this.suggestedGroupTags.forEach((sg) => {
+          sg.doc = sg.doc.toString().replace(/,/g, ', ');
+        });
+        document.querySelector('paper-autocomplete-suggestions').style.display = "block";
+      } else {
+        document.querySelector('paper-autocomplete-suggestions').style.display = "none";
+      }
+    },
+    /**
+    * synonymExists is the internal method to check if the synonym exist for given tag label.
+    */
+    synonymExists: function(label) {
       return this.tags.some(function(el) {
-        return el.label.toLowerCase() === tag.toLowerCase();
+        return el.label.toLowerCase() === label.toLowerCase();
       });
     },
-
     /**
      * installShortcut is a public method to create the new shortcuts.
      *
@@ -400,7 +412,6 @@ If you want to save it in bower.json file, remember to add flag --save
       // Add new or override the existing shortcut.
       this.shortcuts[command] = callback;
     },
-
     /**
      * _getInputVal is the internal method to get the value of paper-input. It performs a trim on the value.
      *
@@ -410,7 +421,6 @@ If you want to save it in bower.json file, remember to add flag --save
       var input = this.$$("#autoCompleteInput");
       return input.text;
     },
-
     /**
      * _keyUp is fired when user enters a key in the input
      *
@@ -418,12 +428,10 @@ If you want to save it in bower.json file, remember to add flag --save
      */
     _keyUp: function(e) {
       var keyVal = e.which;
-
       if (keyVal == 13) {
         this._addTag(this._getInputVal());
       }
     },
-
     /**
      * Handler for "tag-item-remove" event, which is fired when a <tag-item> is being removed.
      *
@@ -432,42 +440,41 @@ If you want to save it in bower.json file, remember to add flag --save
     _onTagItemRemove: function(e) {
       this.splice("tags", e.detail.index, 1);
     },
-
     /**
      * Clears the input and suggestion list.
      *
      */
     _clear: function() {
       var input = this.$$("#autoCompleteInput");
-
       input.clear();
       input.reset();
       this.querySelector("#suggestionsWrapper").style.display = "none";
     },
-    /**
-     * Clears the input and suggestion list.
-     *
-     */
      _queryFn: function(datasource, query) {
        return datasource
      },
+     /**
+     * _onOptionSelected is internal method to observe which autocomplete suggestion is selected by user.
+     */
      _onOptionSelected: function (event) {
       this._addTag(event.detail.option)
-    },
+     },
+    /**
+     * _textChanged is internal method to observe text entered in the paper autocomplete element.
+     */
     _textChanged: function(event) {
       if(event.detail.value == "") {
         this.displayWarning = false;
       } else {
         if(this.synonymExists(event.detail.value)) {
-          this.displayWarning = true
+          this.displayWarning = true;
         } else {
           this.displayWarning = false;
-          if(event.detail.value && event.detail.value.length >= 2) {
+          if(event.detail.value.length >= 2) {
             this.fire("get-sugesstion-intent", event.detail.value)
           }
         }  
       }
     },
   });
-
 </script>
