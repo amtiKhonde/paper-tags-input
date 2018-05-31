@@ -83,7 +83,6 @@ tag-item is a tag element used by tags-input to show tags with a closed button.
         height: 14px;
     }
     .tag-item-container .tooltiptext {
-        visibility: hidden;
         float: left;
         max-width: 500px;
         margin-top: 2px;
@@ -99,11 +98,25 @@ tag-item is a tag element used by tags-input to show tags with a closed button.
         padding: 5px 5px;
         position: absolute;
         z-index: 1;
-        opacity: 0.9;
     }
-    .tag-item-container:hover .tooltiptext {
-        visibility: visible;
+    .fade-in {
+      -webkit-animation: fadeIn 1s ease-in 1 forwards;
+      animation: fadeIn 1s ease-in 1 forwards;
+      opacity: 0;
+    }
+    .is-paused {
+      -webkit-animation-play-state: paused;
+      animation-play-state: paused;
+    }
+    @-webkit-keyframes fadeIn {
+      to {
         opacity: 0.8;
+      }
+    }
+    @keyframes fadeIn {
+      to {
+        opacity: 0.8;
+      }
     }
     .suggestion {
       padding-left:0 !important;
@@ -132,7 +145,7 @@ tag-item is a tag element used by tags-input to show tags with a closed button.
         <template is="dom-if" if="{{!enableRemove}}">
           <paper-icon-button data-args$={{tagData.refId}} style="width:0px;visibility:hidden;" on-tap="remove" icon="icons:cancel"></paper-icon-button>
         </template>
-        <span id="tooltip" hidden$="[[!enableTooltip]]" class="tooltiptext">{{synonymsString}}</span>
+        <span id="tooltip" hidden$="[[!enableTooltip]]" class="tooltiptext fade-in is-paused">{{synonymsString}}</span>
       </template>
     </div>
   </template>
@@ -261,11 +274,9 @@ tag-item is a tag element used by tags-input to show tags with a closed button.
      * Function to set tooltip size.
     */
     _setTooltipSize: function(length) {
-      if(length > 80) {
-        this.$$("#tooltip").style.width = "500px"
-      } else {
+      length > 80 ?
+        this.$$("#tooltip").style.width = "500px" :
         this.$$("#tooltip").style.whiteSpace = "nowrap";
-      }
     },
     /**
      * Handler for MouseOut on Tags.
@@ -273,6 +284,8 @@ tag-item is a tag element used by tags-input to show tags with a closed button.
      _onMouseOut: function(e) {
       if(this.tagType == "group") {
         this.isHovered = false;
+        this.$$("#tooltip").classList.add("is-paused");
+        this.$$("#tooltip").style.display = "none";
       }
     },
     /**
@@ -284,12 +297,15 @@ tag-item is a tag element used by tags-input to show tags with a closed button.
         if(!this.synonymsExists(this.tagData.refId)) {
           this.enableTooltip = false;
           this.$$("#tag").style.cursor = "wait";
+          this.$$("#tooltip").classList.add("is-paused");
           this.fire("get-synonyms-intent", this.tagData.refId);
         } else {
+          this.$$("#tag").style.cursor = "default";
+          this.synonymsString = this.tagData.doc.toString().replace(/,/g, ", ");
+          this._setTooltipSize(this.synonymsString.length);
           this.enableTooltip = true;
-          this.$$("#tag").style.cursor = "default"
-          this.synonymsString = this.tagData.doc.toString().replace(/,/g, ', ');
-          this._setTooltipSize(this.synonymsString.length)
+          this.$$("#tooltip").style.display = "block";
+          this.$$("#tooltip").classList.remove("is-paused");
         }
       } else {
         this.enableTooltip = false;
@@ -308,13 +324,13 @@ tag-item is a tag element used by tags-input to show tags with a closed button.
      * Function to observe whether the docs(synonyms) are updated.
      */
     _docsUpdated: function() {
-      if(this.tagData.doc != undefined && this.tagData.doc.length > 0) {
+      if(this.tagData.doc != undefined && this.tagData.doc.length > 0 && this.isHovered) {
+          this.$$("#tag").style.cursor = "default";
+          this.synonymsString = this.tagData.doc.toString().replace(/,/g, ", ");
+          this._setTooltipSize(this.synonymsString.length);
           this.enableTooltip = true;
-          this.synonymsString = this.tagData.doc.toString();
-          if(this.isHovered) {
-            this._setTooltipSize(this.synonymsString.length)
-            this.$$("#tag").style.cursor = "default";
-          }
+          this.$$("#tooltip").style.display = "block";
+          this.$$("#tooltip").classList.remove("is-paused");
       }
     },
     /**
@@ -328,7 +344,6 @@ tag-item is a tag element used by tags-input to show tags with a closed button.
      */
     _removeSuggestion: function() {
         this.fire("suggestedTag-item-removed", {index: this.index});
-    }
-    
+    }  
   });
 </script>
