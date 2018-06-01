@@ -326,7 +326,7 @@ If you want to save it in bower.json file, remember to add flag --save
       }
       if (tag != "" && this.tags.indexOf(tag) < 0) {
         if (typeof tag != "string") {
-          if (!this.synonymExists(tag.label)) {
+          if (!this.synonymExists(null,tag)) {
             // Convert comma sepetated list of synonyms(docs) into array before adding.
             var x = tag.doc.split(",").map(function(item) {
               return item.trim();
@@ -352,7 +352,7 @@ If you want to save it in bower.json file, remember to add flag --save
               refId: "",
               doc: "",
             }; 
-            if (!this.synonymExists(result.label)) {
+            if (!this.synonymExists(result.label, null)) {
               this.push("tags",result)
             }
           }
@@ -395,10 +395,16 @@ If you want to save it in bower.json file, remember to add flag --save
     /**
     * synonymExists is the internal method to check if the synonym exist for given tag label.
     */
-    synonymExists: function(label) {
-      return this.tags.some(function(el) {
-        return el.label.toLowerCase() === label.toLowerCase();
-      });
+    synonymExists: function(label, tag) {
+      if (label == null) {
+        return this.tags.some(function(el) {
+          return el.refId.toLowerCase() === tag.refId.toLowerCase();
+        });
+      } else {
+        return this.tags.some(function(el) {
+          return el.label.toLowerCase() === label.toLowerCase();
+        });
+      }
     },
     /**
      * installShortcut is a public method to create the new shortcuts.
