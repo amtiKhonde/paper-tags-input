@@ -77,8 +77,8 @@ If you want to save it in bower.json file, remember to add flag --save
         <template is="dom-if" if="{{item.refId}}">
           <tag-item
               tag-type="group"
-              font-color="white"
-              tag-color="#3f51b5"
+              font-color="{{fontColor}}"
+              tag-color="rgba(63, 81, 181, 0.12)"
               tag-data="{{item}}"
               size="{{size}}"
               enable-remove="{{enableRemove}}"
@@ -175,7 +175,7 @@ If you want to save it in bower.json file, remember to add flag --save
             <paper-item id="suggestion-item" class="suggestion-item" on-tap="_onSelect" id$="[[_getSuggestionId(index)]]" role="option" aria-selected="false">
                 <div class="suggestion-wrapper">
                   <div class="intent-name">[[item.label]]</div>
-                  <div class="synonyms-list"> [[item.doc]]</div>
+                  <div class="synonyms-list">[[item.doc]]</div>
                 </div>
                 <paper-ripple></paper-ripple>
             </paper-item>
@@ -326,8 +326,8 @@ If you want to save it in bower.json file, remember to add flag --save
       }
       if (tag != "" && this.tags.indexOf(tag) < 0) {
         if (typeof tag != "string") {
-          if (!this.synonymExists(null,tag)) {
-            // Convert comma sepetated list of synonyms(docs) into array before adding.
+          if (!this.synonymExists(null,tag.refId)) {
+            // Convert comma seperated list of synonyms(docs) into array before adding.
             var x = tag.doc.split(",").map(function(item) {
               return item.trim();
             });
@@ -385,25 +385,26 @@ If you want to save it in bower.json file, remember to add flag --save
       if (this.suggestedGroupTags.length > 0) {
         // Convert array of synonyms in to comma seperated string to display.
         this.suggestedGroupTags.forEach((sg) => {
-          sg.doc = sg.doc.toString().replace(/,/g, ', ');
+          sg.doc = sg.doc.join(", ");
         });
-        document.querySelector('paper-autocomplete-suggestions').style.display = "block";
-      } else {
-        document.querySelector('paper-autocomplete-suggestions').style.display = "none";
+        this.notifyPath("suggestedGroupTokens", this.suggestedGroupTokens);
       }
     },
     /**
     * synonymExists is the internal method to check if the synonym exist for given tag label.
     */
-    synonymExists: function(label, tag) {
+    synonymExists: function(label, refId) {
       if (label == null) {
         return this.tags.some(function(el) {
-          return el.refId.toLowerCase() === tag.refId.toLowerCase();
+          return el.refId && el.refId != "" &&
+            el.refId.toLowerCase() === refId.toLowerCase();
         });
+        return false;
       } else {
         return this.tags.some(function(el) {
           return el.label.toLowerCase() === label.toLowerCase();
         });
+        return false;
       }
     },
     /**
@@ -470,15 +471,11 @@ If you want to save it in bower.json file, remember to add flag --save
       if(event.detail.value == "") {
         this.displayWarning = false;
       } else {
-        if(this.synonymExists(event.detail.value)) {
-          this.displayWarning = true;
-        } else {
-          this.displayWarning = false;
-          //Remove all the old suggestions
-          event.detail.value.length >= 2 ?
-            this.fire("get-sugesstion-intent", event.detail.value) :
-            this.suggestedGroupTags = [];
-        }  
+        this.displayWarning = this.synonymExists(event.detail.value, null) ? true : false;
+        //Remove all the old suggestions
+        event.detail.value.length >= 2 ?
+          this.fire("get-sugesstion-intent", event.detail.value) :
+          this.suggestedGroupTags = [];
       }
     },
   });
