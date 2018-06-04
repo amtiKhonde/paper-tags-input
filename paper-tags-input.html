@@ -74,28 +74,15 @@ If you want to save it in bower.json file, remember to add flag --save
     <h3>{{label}}</h3>
     <div class="clearfix">
       <template is="dom-repeat" items="{{tags}}">
-        <template is="dom-if" if="{{item.refId}}">
-          <tag-item
-              tag-type="group"
-              font-color="{{fontColor}}"
-              tag-color="rgba(63, 81, 181, 0.12)"
-              tag-data="{{item}}"
-              size="{{size}}"
-              enable-remove="{{enableRemove}}"
-              index="{{index}}">
-          </tag-item>
-        </template>
-        <template is="dom-if" if="{{!item.refId}}">
-          <tag-item
-              tag-type="normal"
-              font-color="{{fontColor}}"
-              tag-color="{{tagColor}}"
-              tag-data="{{item}}"
-              size="{{size}}"
-              enable-remove="{{enableRemove}}"
-              index="{{index}}">
-          </tag-item>
-        </template>
+        <tag-item
+          tag-type="{{_getTagType(item.refId)}}"
+          font-color="{{fontColor}}"
+          tag-color="{{_getTagColor(item.refId)}}"
+          tag-data="{{item}}"
+          size="{{size}}"
+          enable-remove="{{enableRemove}}"
+          index="{{index}}">
+        </tag-item>
       </template>
     </div>
     <template is="dom-if" if="{{isSuggestion}}">
@@ -121,11 +108,10 @@ If you want to save it in bower.json file, remember to add flag --save
           no-label-float="true"
           on-keyup="_keyUp"
           on-text-changed="_textChanged"
-          source="{{suggestedGroupTags}}"
           text-property="label"
           value-property="id">
           <template autocomplete-custom-template>
-              <style>
+            <style>
               :host {
                 display: block;
               }
@@ -157,18 +143,31 @@ If you want to save it in bower.json file, remember to add flag --save
               * If you are running on IE11, add this lines to reset min-height on IE11
               */
               @media screen and (-ms-high-contrast: active), (-ms-high-contrast: none) {
+                :host {
+                  display: block;
+                }
                 paper-item.suggestion-item {
-                  min-height: 100% !important;
-                  height: auto !important;
-                  /**
-                  * If you are experimenting that some CSS properties for paper-item are not overriden in Polymer 2.x with IE11,
-                  * please add !important to ensure the shadow-dom v1 polyfill works properly
-                  */
                   padding: 8px 16px;
                   border-bottom: solid 1px #e0e0e0;
                 }
                 paper-item.suggestion-item:last-child {
                   border-bottom: none !important;
+                }
+                .intent-name {
+                  color: #333;
+                }
+                .synonyms-list {
+                  margin-top: 4px;
+                  color: #999;
+                  white-space: nowrap;
+                }
+                .suggestion-item:hover .synonyms-list {
+                  animation: marquee 15s linear infinite;
+                  animation-play-state: running; 
+                }
+                @keyframes marquee {
+                  0%   { transform: translate(0, 0); }
+                  100% { transform: translate(-100%, 0); }
                 }
               }
             </style>
@@ -314,6 +313,18 @@ If you want to save it in bower.json file, remember to add flag --save
       //
       // Use this to clean up anything you did in `attached`.
     },
+    /**
+    * _getTagColor is the internal method to get the color for the tag.
+    */
+    _getTagColor: function(refId) {
+      return refId == "" || refId == undefined ? "transparent" : "rgba(63, 81, 181, 0.12)";
+    },
+    /**
+    * _getTagType is the internal method to get the type for the tag.
+    */
+    _getTagType: function(refId) {
+      return refId == "" || refId == undefined ? "normal" : "group";
+    },
     // Element Behavior
     /**
      * _addTag is the internal method to add a new tag to the list
@@ -387,7 +398,9 @@ If you want to save it in bower.json file, remember to add flag --save
         this.suggestedGroupTags.forEach((sg) => {
           sg.doc = sg.doc.join(", ");
         });
-        this.notifyPath("suggestedGroupTokens", this.suggestedGroupTokens);
+         // Setting suggestion on auto complete this way since notifyPath does not work accurately.
+        var autocomplete = this.$$('paper-autocomplete');
+        autocomplete.suggestions(this.suggestedGroupTags);
       }
     },
     /**
@@ -468,14 +481,19 @@ If you want to save it in bower.json file, remember to add flag --save
      * _textChanged is internal method to observe text entered in the paper autocomplete element.
      */
     _textChanged: function(event) {
+      this.set("suggestedGroupTags", []);
+      // Setting suggestion on auto complete this way since notifyPath does not work accurately.
+      var autocomplete = this.$$('paper-autocomplete');
+      autocomplete.suggestions(this.suggestedGroupTags);
+
       if(event.detail.value == "") {
         this.displayWarning = false;
       } else {
         this.displayWarning = this.synonymExists(event.detail.value, null) ? true : false;
-        //Remove all the old suggestions
-        event.detail.value.length >= 2 ?
-          this.fire("get-sugesstion-intent", event.detail.value) :
-          this.suggestedGroupTags = [];
+        // Remove all the old suggestions
+        if(event.detail.value.length >= 2) {
+          this.fire("get-sugesstions", event.detail.value);
+        }
       }
     },
   });
