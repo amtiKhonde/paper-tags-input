@@ -317,13 +317,13 @@ If you want to save it in bower.json file, remember to add flag --save
     * _getTagColor is the internal method to get the color for the tag.
     */
     _getTagColor: function(refId) {
-      return refId == "" || refId == undefined ? "transparent" : "rgba(63, 81, 181, 0.12)";
+      return refId ? "rgba(63, 81, 181, 0.12)" : "transparent";
     },
     /**
     * _getTagType is the internal method to get the type for the tag.
     */
     _getTagType: function(refId) {
-      return refId == "" || refId == undefined ? "normal" : "group";
+      return refId ? "group" : "normal";
     },
     // Element Behavior
     /**
@@ -481,6 +481,7 @@ If you want to save it in bower.json file, remember to add flag --save
      * _textChanged is internal method to observe text entered in the paper autocomplete element.
      */
     _textChanged: function(event) {
+      // Remove
       this.set("suggestedGroupTags", []);
       // Setting suggestion on auto complete this way since notifyPath does not work accurately.
       var autocomplete = this.$$('paper-autocomplete');
@@ -490,7 +491,6 @@ If you want to save it in bower.json file, remember to add flag --save
         this.displayWarning = false;
       } else {
         this.displayWarning = this.synonymExists(event.detail.value, null) ? true : false;
-        // Remove all the old suggestions
         if(event.detail.value.length >= 2) {
           this.fire("get-sugesstions", event.detail.value);
         }
