@@ -260,26 +260,32 @@ If you want to save it in bower.json file, remember to add flag --save
      *
      * @param {string} the tag that needs to be added.
      */
-    _addTag: function(tag) {
+    _addTag: function(inputTag) {
       if (this.enableAdd) {
         if (typeof (this.tags) == "undefined") {
           this.tags = [];
         }
-        if (tag != "" && this.tags.indexOf(tag) < 0) {
-          // Remove the spaces in tag and split.
-          var args = tag.replace(/[\s]+/g, " ").split(/[\s,]+/g);
+        let validatedTags = inputTag.split(",").map(t => {
+          return t.trim();
+        }).filter(t => {
+          return t != "" && this.tags.indexOf(t) < 0 && /[A-Za-z0-9]/g.test(t);
+        });
 
-          /**
-           * If input tag contains a command, then fire the corresponding
-           * shortcut and push the returned array to tags, else push the input tag directly.
-           */
-          var callback = this.shortcuts[args.splice(0, 1)];
-          var result = callback ? callback(args) : tag.split();
-          result = result.filter((obj) => {
-            return this.tags.indexOf(obj) < 0;
-          });
-          this.push("tags", ...result)
-        }
+        var args = inputTag.replace(/[\s]+/g, " ").split(/[\s,]+/g);
+
+        /**
+        * If input tag contains a command, then fire the corresponding
+        * shortcut and push the returned array to tags, else push the input tag directly.
+        */
+        var callback = this.shortcuts[args.splice(0, 1)];
+        var result = callback ? callback(args) : validatedTags;
+
+        // To remove duplicate tags if present in callback function.
+        result = result.filter((obj) => {
+          return this.tags.indexOf(obj) < 0;
+        });
+
+        this.push("tags", ...result);
       }
 
       this._clear();
