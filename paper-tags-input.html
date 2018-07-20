@@ -268,7 +268,7 @@ If you want to save it in bower.json file, remember to add flag --save
         let validatedTags = inputTag.split(",").map(t => {
           return t.trim();
         }).filter(t => {
-          return t != "" && this.tags.indexOf(t) < 0 && /[A-Za-z0-9]/g.test(t);
+          return t != "" && this.tags.indexOf(t) < 0 && /[A-Za-z0-9]*/g.test(t);
         });
 
         var args = inputTag.replace(/[\s]+/g, " ").split(/[\s,]+/g);
